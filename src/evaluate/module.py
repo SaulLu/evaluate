@@ -174,7 +174,7 @@ class EvaluationModule(EvaluationModuleInfoMixin):
         experiment_id: Optional[str] = None,
         hash: str = None,
         max_concurrent_cache_files: int = 10000,
-        timeout: Union[int, float] = 100,
+        timeout: Union[int, float] = 1000,
         **kwargs,
     ):
         # prepare info
