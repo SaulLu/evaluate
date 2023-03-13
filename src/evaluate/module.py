@@ -334,6 +334,7 @@ class EvaluationModule(EvaluationModuleInfoMixin):
             for process_id in range(self.num_process)
         ]
         for expected_lock_file_name in expected_lock_file_names:
+            print_with_pid(f"Checking lock file {expected_lock_file_name}...")
             nofilelock = FileFreeLock(expected_lock_file_name)
             try:
                 nofilelock.acquire(timeout=self.timeout)
@@ -579,8 +580,10 @@ class EvaluationModule(EvaluationModuleInfoMixin):
         return feature_names
 
     def _init_writer(self, timeout=1):
+        print_with_pid(f"Initializing writer for process {self.process_id} of {self.num_process} processes")
         if self.num_process > 1:
             if self.process_id == 0:
+                print_with_pid(f"Creating rendez-vous lock for {self.num_process} processes")
                 file_path = os.path.join(self.data_dir, f"{self.experiment_id}-{self.num_process}-rdv.lock")
                 self.rendez_vous_lock = FileLock(file_path)
                 try:
@@ -602,6 +605,7 @@ class EvaluationModule(EvaluationModuleInfoMixin):
 
             # Get cache file name and lock it
             if self.cache_file_name is None or self.filelock is None:
+                print_with_pid(f"Creating cache file for process {self.process_id} of {self.num_process} processes")
                 cache_file_name, filelock = self._create_cache_file()  # get ready
                 self.cache_file_name = cache_file_name
                 self.filelock = filelock
@@ -614,9 +618,11 @@ class EvaluationModule(EvaluationModuleInfoMixin):
         # Setup rendez-vous here if
         if self.num_process > 1:
             if self.process_id == 0:
+                print_with_pid(f"Main process {self.process_id} is ready")
                 self._check_all_processes_locks()  # wait for everyone to be ready
                 self.rendez_vous_lock.release()  # let everyone go
             else:
+                print_with_pid(f"Process {self.process_id} is ready")
                 self._check_rendez_vous()  # wait for master to be ready and to let everyone go
 
     def _info(self) -> EvaluationModuleInfo:
@@ -909,3 +915,7 @@ def combine(evaluations, force_prefix=False):
     """
 
     return CombinedEvaluations(evaluations, force_prefix=force_prefix)
+
+def print_with_pid(msg):
+    pid = os.getpid()
+    print(f"[pid: {pid}] {msg}")
