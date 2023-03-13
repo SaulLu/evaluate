@@ -470,6 +470,7 @@ class EvaluationModule(EvaluationModuleInfoMixin):
             predictions (list/array/tensor, optional): Predictions.
             references (list/array/tensor, optional): References.
         """
+        print_with_pid(f"Adding batch, self.writer is of type {type(self.writer)}")
         bad_inputs = [input_name for input_name in kwargs if input_name not in self._feature_names()]
         if bad_inputs:
             raise ValueError(
